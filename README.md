@@ -13,3 +13,8 @@ Future:
 - Encrypted communication
 - More complexity
 - More options
+
+#WARNING
+
+This script is not finished.
+There may be difficulty running this script correctly if you do not have knowledge of how socket, threading and other libraries used by the script work.

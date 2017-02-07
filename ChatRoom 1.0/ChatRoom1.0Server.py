@@ -18,6 +18,8 @@ quit = Queue.Queue()
 quit.put("")
 mesg = Queue.Queue()
 mesg.put("")
+online = Queue.Queue()
+online.put([])
 print """\33[91m
 ═════════════════════════════════════════════════════════
                 ███████    ██████         ███████
@@ -79,7 +81,12 @@ class consoleprompt(Cmd):
             for lin in line:
                 print lin
     def do_online(self, args):
-        print "In Development..."
+        global online
+        on = online.get()
+        online.put(on)
+        print "Online:"
+        for username in on:
+            print username
     def do_printerrors(self, args):
         global errors
         erlist = errors.get()
@@ -101,7 +108,7 @@ class consoleprompt(Cmd):
         time.sleep(2)
         os._exit(0)
 class Server(object):
-    def __init__(self, host, port, q, motd, errors, mesg, quit):
+    def __init__(self, host, port, q, motd, errors, mesg, quit, online):
         self.motd = motd
         self.quit = quit
         self.errors = errors
@@ -109,7 +116,7 @@ class Server(object):
         self.port = port
         self.q = q
         self.mesg = mesg
-        self.online = []
+        self.online = online
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
@@ -157,12 +164,14 @@ class Server(object):
             if "user:" not in name:
                 client.send("error:wrong type of packet received. 'user:' was not within the packet")
                 erlist = errors.get()
-                erlist.append(client.gethostname() + ":wrong type of packet received. 'user:' was not within the packet")
+                erlist.append(client.getpeername() + ":wrong type of packet received. 'user:' was not within the packet")
                 errors.put(erlist)
             else:
                 name = name[5:]
                 used = False
-                for user in self.online:
+                online = self.online.get()
+                self.online.put(online)
+                for user in online:
                     if user == name:
                         used = True
                     else:
@@ -171,7 +180,7 @@ class Server(object):
                     client.send("error:Username has already been used before.")
                     client.close()
                     erlist = errors.get()
-                    erlist.append(client.gethostname() + ":" + name + ":Username has already been used before.")
+                    erlist.append(name + ":" + name + ":Username has already been used before.")
                     errors.put(erlist)
                     check = False
                 else:
@@ -194,7 +203,9 @@ class Server(object):
                     q.get()
                     q.put(db)
                 try:
-                    self.online.append(name)
+                    online = self.online.get()
+                    online.append(name)
+                    self.online.put(online)
                     while True:
                             rmesg = client.recv(1024)
                             if "" == rmesg:
@@ -208,10 +219,12 @@ class Server(object):
                                 self.mesg.get()
                                 self.mesg.put(name + ":" + rmesg[5:])
                 except:
-                    if name in self.online:
-                        self.online.remove(name)
+                    online = self.online.get()
+                    if name in online:
+                        online.remove(name)
                     else:
                         pass
+                    self.online.put(online)
             else:
                 pass
 def writeoutput(q, errors):
@@ -240,4 +253,4 @@ def writeoutput(q, errors):
 if __name__ == "__main__":
     threading.Thread(target = writeoutput,args = (q,errors)).start()
     threading.Thread(target = console,args = (q, errors, motd)).start()
-    Server('',port,q,motd,errors,mesg, quit).listen()
+    Server('',port,q,motd,errors,mesg, quit, online).listen()

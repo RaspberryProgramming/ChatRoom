@@ -98,6 +98,7 @@ class connect(object):
                   """ + nc[6:] + """
             ***************************************************
             """
+            os._exit(0)
         threading.Thread(target = self.screen, args=()).start()
         #self.screen.start()
         quit = False

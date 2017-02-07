@@ -142,13 +142,3 @@ def quitcheck(quit):
             os._exit(0)
 threading.Thread(target = quitcheck, args=(quit,)).start()
 threading.Thread(target=connect, args=(server, port, username, quit)).start()
-'''while True:
-    time.sleep(1)
-    print "quitcheck..."
-    print quit.empty()
-    if quit.empty() == True:
-        pass
-    else:
-        print "1"
-        os._exit(0)
-'''

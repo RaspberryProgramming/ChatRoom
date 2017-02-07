@@ -202,6 +202,9 @@ class Server(object):
                             elif "/help" == rmesg:
                                 pass
                             else:
+                                db = q.get()
+                                db[leng].append(name + ":" + rmesg[5:])
+                                q.put(db)
                                 self.mesg.get()
                                 self.mesg.put(name + ":" + rmesg[5:])
                 except:
@@ -220,16 +223,19 @@ def writeoutput(q, errors):
             error = errors.get()
             errors.put(error)
             fw = "Users:\n"
+            errs = ""
+            for err in error:
+                errs = errs + err + "\n"
             for line in tta:
                 for lin in line:
                     fw = fw + str(lin) + "\n"
-            fw = fw + "═════════════════════════════════════════════════════════\nErrors:\n" + error
+            fw = fw + "═════════════════════════════════════════════════════════\nErrors:\n" + errs
             f = open("crs.log", 'w')
             f.write(fw)
             f.close()
         except:
             error = errors.get()
-            error = error + "exception\n"
+            error.append("Error while writing output\n")
             errors.put(error)
 if __name__ == "__main__":
     threading.Thread(target = writeoutput,args = (q,errors)).start()

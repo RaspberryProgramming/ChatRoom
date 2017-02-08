@@ -91,7 +91,9 @@ class consoleprompt(Cmd):
         global errors
         erlist = errors.get()
         errors.put(erlist)
-        print erlist
+        print "Errors:"
+        for error in erlist:
+            print error
     def do_motd(self, args):
         if "-c" in args:
             global motd
@@ -137,14 +139,30 @@ class Server(object):
         if str(cv) != rcv[3:] and "cv:" in rcv:
             client.send("comp:0:" + str(cv))
         elif rcv == "screen:":
+            online = self.online.get()
+            self.online.put(online)
+            ol = online
+            client.send(str(online))
             cmessage = self.mesg.get()
             self.mesg.put(cmessage)
             lm = cmessage
             try:
                 while True:
-                    time.sleep(.001)
                     cmessage = self.mesg.get()
                     self.mesg.put(cmessage)
+                    online = self.online.get()
+                    self.online.put(online)
+                    if ol != online:
+                        for line in ol:
+                            if line not in online:
+                                client.send("offline:" + line)
+                            else:
+                                pass
+                        for line in online:
+                            if line not in ol:
+                                client.send("online" + line)
+                    else:
+                        pass
                     if cmessage != lm:
                         client.send(cmessage)
                         lm = cmessage
@@ -156,6 +174,7 @@ class Server(object):
                         client.send("quitting:")
                     else:
                         pass
+                    time.sleep(.001)
             except:
                 pass
         else:

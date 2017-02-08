@@ -26,29 +26,95 @@ path = os.path.realpath(__file__)
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--screen", help="This is used by the script to make a screen. Not necessarily needed for regular users.")
 args = parser.parse_args()
+
+def outputscreen(messages, online):
+    rows, columns = os.popen('stty size', 'r').read().split()
+    rows = int(rows)
+    rows = rows - 1
+    columns = int(columns)
+    if len(messages) > rows:
+        messages = messages[rows:]
+    else:
+        pass
+    '''if len(online) > rows:
+        online = online[rows + 1:]
+    else:
+        pass'''
+    output = []
+    for line in range(rows):
+        output.append(["", ""])
+    tick = 0
+    for message in messages:
+        output[tick][0] = message
+        tick = tick + 1
+    if len(output) <= len(online):
+        print "less or equal output then online"
+        for l in range(len(online) - len(output)):
+            output.append(["", ""])
+        print output
+        #for num in range(len(online)):
+        tick = 0
+        print output
+        for user in online:
+            output[tick][1] = user
+            tick = tick + 1
+        print output
+    else:
+        print "more output then online"
+        print rows
+        #for num in range(len(output)):
+        tick = 0
+        for user in online:
+            output[tick][1] = user
+            tick = tick + 1
+    for line in output:
+        space = int(columns)
+        outleng = len(line[0]) + len(line[1])
+        space = space - outleng
+        print line[0] + " "*space + line[1]
 if args.screen:
     sp = args.screen
     sp = sp.split(":")
+    user = sp[2]
     port = int(sp[1])
     server = sp[0]
-    try:
-        global cv
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_address = (server, port)
-        sock.connect(server_address)
-        sock.send("screen:")
-        print "\33[96m Type /stop to quit\33[91m"
-        quit = False
-        while quit == False:
-                screenprint = sock.recv(1024)
-                if screenprint == "quitting:":
-                    os._exit(0)
-                else:
-                    print screenprint
-                    time.sleep(.01)
-    except:
+    #try:
+    global cv
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = (server, port)
+    sock.connect(server_address)
+    sock.send("screen:")
+    #print "\33[96m Type /stop to quit\33[91m"
+    quit = False
+    messages = []
+    import ast
+    online = sock.recv(1024)
+    online = ast.literal_eval(online)
+    while quit == False:
+            servercom = sock.recv(1024)
+            if servercom == "quitting:":
+                os._exit(0)
+            elif "online:" in servercom:
+                online.append(servercom[7:])
+                outputscreen(messages, online)
+            elif "offline:" in servercom:
+                if servercom[8:] in online:
+                    online.remove(servercom[8:])
+                    outputscreen(messages, online)
+            else:
+                messages.append(servercom)
+                outputscreen(messages, online)
+                time.sleep(.01)
+            if servercom == "ping":
+                sock.send("ping:pong")
+            if user not in online:
+                quit = True
+                os._exit(0)
+            else:
+                pass
+    '''except:
         print "ERROR"
-        sys.exit()
+        sys.exit()'''
 else:
     pass
 cv = "1.0"
@@ -132,7 +198,7 @@ class connect(object):
             sys.exit()'''
     def screen(self):
         global path
-        os.system("xterm -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port)
+        os.system("xterm -hold -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
         self.quit.put("1")
 def quitcheck(quit):
     while True:

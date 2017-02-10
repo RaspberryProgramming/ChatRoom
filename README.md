@@ -1,7 +1,9 @@
 #ChatRoom ReadME
 Chat room was made with some parts based on Comugypt 1.0. There will be plans for encryption but that will be in later updates.
+Chat Room Doser is made for experimentation and research only. Do not use the script on any Chat Room servers. Chat Room Doser is made only for the Chat Room server.
 ChatRoom 1.0 is under development and may require advanced knowledge in python in order to troubleshoot issues.
 If you find any issues please contact me on one of the social media accounts listed towards the bottom of this README
+
 Chat Room 1.0 Features:
 - Works and tested on Ubuntu
 - Plaintext communication

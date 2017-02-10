@@ -141,31 +141,18 @@ class Server(object):
         elif rcv == "screen:":
             online = self.online.get()
             self.online.put(online)
-            tmp = online
             client.send(str(online))
             cmessage = self.mesg.get()
             self.mesg.put(cmessage)
             lm = cmessage
             tick = 0
+            qi = False
             try:
-                while True:
+                while qi == False:
                     cmessage = self.mesg.get()
                     self.mesg.put(cmessage)
                     online = self.online.get()
                     self.online.put(online)
-                    if tmp != online:
-                        print "1"
-                        for line in tmp:
-                            if line not in online:
-                                client.send("offline:" + line)
-                            else:
-                                pass
-                        for line in online:
-                            if line not in tmp:
-                                client.send("online:" + line)
-                        tmp = online
-                    else:
-                        pass
                     if cmessage != lm:
                         client.send(cmessage)
                         lm = cmessage
@@ -173,20 +160,27 @@ class Server(object):
                         pass
                     quit = self.quit.get()
                     self.quit.put(quit)
-                    if quit == "quitting:":
-                        client.send("quitting:")
-                        client.close()
-                    else:
-                        pass
                     if tick == 1000:
                         client.send("online:" + str(online))
+                        onlinecheck = client.recv(1024)
+                        if onlinecheck == "quitting:":
+                            quit = "quitting:"
+                            qi = True
+                        else:
+                            pass
                         tick = 0
                     else:
                         pass
                     tick = tick + 1
+                    if quit == "quitting:":
+                        client.send("quitting:")
+                        client.close()
+                        qi = True
+                    else:
+                        pass
                     time.sleep(.001)
             except:
-                print "error"
+                print "Screen Error"
                 pass
         else:
             client.send("comp:1")
@@ -255,7 +249,6 @@ class Server(object):
                                 self.mesg.get()
                                 self.mesg.put(name + ":" + rmesg[5:])
                 except:
-                    print name + " left"
                     online = self.online.get()
                     if name in online:
                         online.remove(name)

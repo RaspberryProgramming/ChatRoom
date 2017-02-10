@@ -78,7 +78,6 @@ if args.screen:
     user = sp[2]
     port = int(sp[1])
     server = sp[0]
-    #try:
     global cv
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (server, port)
@@ -90,18 +89,37 @@ if args.screen:
     import ast
     online = sock.recv(1024)
     online = ast.literal_eval(online)
+    tmp = online
     while quit == False:
             servercom = sock.recv(1024)
-            print servercom
+            #print servercom
             if servercom == "quitting:":
-                print "quitting1"
                 quit.put("1")
                 quit = True
                 os._exit(0)
             elif "online:" in servercom:
-                print "online " + str(servercom[7:])
                 online = ast.literal_eval(servercom[7:])
-                outputscreen(messages, online)
+                if tmp != online:
+                    for line in tmp:
+                        if line not in online:
+                            messages.append(line + " has left the server...")
+                        else:
+                            pass
+                    for line in online:
+                        if line not in tmp:
+                            messages.append(line + " has joined the server...")
+                        else:
+                            pass
+                else:
+                    pass
+                if user not in online:
+                    quit = True
+                    sock.send("quitting:")
+                    os._exit(0)
+                else:
+                    sock.send("good:")
+                    tmp = online
+                    outputscreen(messages, online)
             else:
                 messages.append(servercom)
                 outputscreen(messages, online)
@@ -110,15 +128,6 @@ if args.screen:
                 sock.send("ping:pong")
             else:
                 pass
-            if user not in online:
-                print "quitting bro"
-                quit = True
-                os._exit(0)
-            else:
-                pass
-    '''except:
-        print "ERROR"
-        sys.exit()'''
 else:
     pass
 cv = "1.0"
@@ -209,7 +218,7 @@ class connect(object):
             time.sleep(1)
     def screen(self):
         global path
-        os.system("xterm -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
+        os.system("xterm -hold -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
         self.qt = True
         self.quit.put("1")
 def quitcheck(quit):

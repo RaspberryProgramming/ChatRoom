@@ -33,13 +33,15 @@ def outputscreen(messages, online):
     rows = rows - 1
     columns = int(columns)
     if len(messages) > rows:
-        messages = messages[rows:]
+        messages = messages[len(messages) - rows:]
+        print messages
     else:
         pass
-    '''if len(online) > rows:
-        online = online[rows + 1:]
+    if len(online) > rows:
+        online = online[len(online) - rows:]
+        print online
     else:
-        pass'''
+        pass
     output = []
     for line in range(rows):
         output.append(["", ""])
@@ -47,6 +49,7 @@ def outputscreen(messages, online):
     for message in messages:
         output[tick][0] = message
         tick = tick + 1
+        print tick
     if len(output) <= len(online):
         print "less or equal output then online"
         for l in range(len(online) - len(output)):
@@ -218,7 +221,7 @@ class connect(object):
             time.sleep(1)
     def screen(self):
         global path
-        os.system("xterm -hold -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
+        os.system("xterm -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
         self.qt = True
         self.quit.put("1")
 def quitcheck(quit):

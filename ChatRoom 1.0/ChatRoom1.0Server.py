@@ -126,7 +126,7 @@ class Server(object):
         self.sock.listen(5)
         while True:
             client, address = self.sock.accept()
-            client.settimeout(60)
+            client.settimeout(10)
             #threading.Thread(target = self.sendcid,args = (client,address)).start()
             #global clientdb
             threading.Thread(target = self.listenToClient,args = (client,address)).start()
@@ -141,26 +141,29 @@ class Server(object):
         elif rcv == "screen:":
             online = self.online.get()
             self.online.put(online)
-            ol = online
+            tmp = online
             client.send(str(online))
             cmessage = self.mesg.get()
             self.mesg.put(cmessage)
             lm = cmessage
+            tick = 0
             try:
                 while True:
                     cmessage = self.mesg.get()
                     self.mesg.put(cmessage)
                     online = self.online.get()
                     self.online.put(online)
-                    if ol != online:
-                        for line in ol:
+                    if tmp != online:
+                        print "1"
+                        for line in tmp:
                             if line not in online:
                                 client.send("offline:" + line)
                             else:
                                 pass
                         for line in online:
-                            if line not in ol:
-                                client.send("online" + line)
+                            if line not in tmp:
+                                client.send("online:" + line)
+                        tmp = online
                     else:
                         pass
                     if cmessage != lm:
@@ -172,10 +175,18 @@ class Server(object):
                     self.quit.put(quit)
                     if quit == "quitting:":
                         client.send("quitting:")
+                        client.close()
                     else:
                         pass
+                    if tick == 1000:
+                        client.send("online:" + str(online))
+                        tick = 0
+                    else:
+                        pass
+                    tick = tick + 1
                     time.sleep(.001)
             except:
+                print "error"
                 pass
         else:
             client.send("comp:1")
@@ -231,6 +242,12 @@ class Server(object):
                                 pass
                             elif "/help" == rmesg:
                                 pass
+                            elif "quitting:" == rmesg:
+                                on = online.get()
+                                on.remove(name)
+                                online.put(on)
+                            elif "ping:" == rmesg:
+                                pass
                             else:
                                 db = q.get()
                                 db[leng].append(name + ":" + rmesg[5:])
@@ -238,6 +255,7 @@ class Server(object):
                                 self.mesg.get()
                                 self.mesg.put(name + ":" + rmesg[5:])
                 except:
+                    print name + " left"
                     online = self.online.get()
                     if name in online:
                         online.remove(name)

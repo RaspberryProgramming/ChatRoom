@@ -92,22 +92,26 @@ if args.screen:
     online = ast.literal_eval(online)
     while quit == False:
             servercom = sock.recv(1024)
+            print servercom
             if servercom == "quitting:":
+                print "quitting1"
+                quit.put("1")
+                quit = True
                 os._exit(0)
             elif "online:" in servercom:
-                online.append(servercom[7:])
+                print "online " + str(servercom[7:])
+                online = ast.literal_eval(servercom[7:])
                 outputscreen(messages, online)
-            elif "offline:" in servercom:
-                if servercom[8:] in online:
-                    online.remove(servercom[8:])
-                    outputscreen(messages, online)
             else:
                 messages.append(servercom)
                 outputscreen(messages, online)
                 time.sleep(.01)
             if servercom == "ping":
                 sock.send("ping:pong")
+            else:
+                pass
             if user not in online:
+                print "quitting bro"
                 quit = True
                 os._exit(0)
             else:
@@ -165,6 +169,7 @@ class connect(object):
             ***************************************************
             """
             os._exit(0)
+        threading.Thread(target = self.ping, args=()).start()
         threading.Thread(target = self.screen, args=()).start()
         #self.screen.start()
         quit = False
@@ -172,6 +177,8 @@ class connect(object):
             inp = raw_input(">>")
             if inp == "/quit":
                 quit = True
+                self.quit.put("1")
+                self.sock.send("quitting:")
             elif "" == inp:
                 """\33[91m
                 ***************************************************
@@ -196,9 +203,14 @@ class connect(object):
             ***************************************************
             """
             sys.exit()'''
+    def ping(self):
+        while True:
+            self.sock.send("ping:")
+            time.sleep(1)
     def screen(self):
         global path
-        os.system("xterm -hold -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
+        os.system("xterm -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
+        self.qt = True
         self.quit.put("1")
 def quitcheck(quit):
     while True:

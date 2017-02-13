@@ -133,7 +133,7 @@ if args.screen:
                 pass
 else:
     pass
-cv = "1.0"
+cv = "1.1"
 username = raw_input("Name:")
 server = raw_input("Server IP[127.0.0.1]:")
 port = raw_input("Server Port[22550]:")
@@ -221,7 +221,7 @@ class connect(object):
             time.sleep(1)
     def screen(self):
         global path
-        os.system("xterm -e python " + "./ChatRoom1.0Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
+        os.system("xterm -e python " + "./ChatRoom1.1Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
         self.qt = True
         self.quit.put("1")
 def quitcheck(quit):

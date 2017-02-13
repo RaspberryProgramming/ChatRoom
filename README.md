@@ -11,6 +11,7 @@ Chat Room 1.0 Codename "Birth" Features:
 - Uses threading for multiple clients
 - Multiple clients supported
 Chat Room 1.1 Codename "Shape Shifter" Features:
+- Added ip logging support
 - Improved support for platforms other than ubuntu.
 - Improved Performance and dos protection.
 Chat Room 2.0 Future Features:
@@ -19,6 +20,9 @@ Chat Room 2.0 Future Features:
 - More options
 - Security
 
+Possible Future Features:
+- SQL or MYSQL logging
+- Data Mining AI
 #WARNING
 
 This script is not finished.

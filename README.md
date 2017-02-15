@@ -4,16 +4,23 @@ Chat Room Doser is made for experimentation and research only. Do not use the sc
 ChatRoom 1.1 is under development and may require advanced knowledge in python in order to troubleshoot issues. ChatRoom 1.1 may not have all features yet.
 If you find any issues please contact me on one of the social media accounts listed towards the bottom of this README
 
+Requirements:
+- Tkinter
+- pip
+
 Chat Room 1.0 Codename "Birth" Features:
+- Ubuntu/Linux based OSes only because it requires xterm
 - Works and tested on Ubuntu
 - Plaintext communication
 - Uses socket
 - Uses threading for multiple clients
 - Multiple clients supported
+
 Chat Room 1.1 Codename "Shape Shifter" Features:
 - Added ip logging support
-- Improved support for platforms other than ubuntu.
-- Improved Performance and dos protection.
+- Improved support for platforms other than Ubuntu/Linux based OSes
+- Improved Performance and dos protection.*
+
 Chat Room 2.0 Future Features:
 - Client Unique Encrypted communication
 - More complexity
@@ -23,8 +30,8 @@ Chat Room 2.0 Future Features:
 Possible Future Features:
 - SQL or MYSQL logging
 - Data Mining AI
-#WARNING
 
+#WARNING
 This script is not finished.
 There may be difficulty running this script correctly if you do not have knowledge of how socket, threading and other libraries used by the script work.
 

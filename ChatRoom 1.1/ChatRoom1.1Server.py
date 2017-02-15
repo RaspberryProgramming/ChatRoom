@@ -132,7 +132,7 @@ class Server(object):
         self.sock.listen(5)
         while True:
             client, address = self.sock.accept()
-            client.settimeout(10)
+            client.settimeout(60)
             #threading.Thread(target = self.sendcid,args = (client,address)).start()
             #global clientdb
             threading.Thread(target = self.listenToClient,args = (client,address)).start()

@@ -88,7 +88,7 @@ def outputscreen(messages, online):
     #lab = 1
     return printout
 #if args.screen:
-def screenrun(username, port, server):
+def screenrun(username, port, server, quit):
     #sp = args.screen
     #sp = sp.split(":")
     #user = sp[2]
@@ -100,7 +100,7 @@ def screenrun(username, port, server):
     sock.connect(server_address)
     sock.send("screen:")
     #print "\33[96m Type /stop to quit\33[91m"
-    quit = False
+    qu = False
     messages = []
 
     online = sock.recv(1024)
@@ -109,12 +109,12 @@ def screenrun(username, port, server):
     root = Tk()
     lab = Label(root)
     lab.pack()
-    while quit == False:
+    while qu == False:
         servercom = sock.recv(1024)
         #print servercom
         if servercom == "quitting:":
             quit.put("1")
-            quit = True
+            qu = True
             #os._exit(0)
         elif "online:" in servercom:
             online = ast.literal_eval(servercom[7:])
@@ -178,8 +178,11 @@ class connect(object):
         #try:
         global cv
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_address = (self.server, int(self.port))
-        self.sock.connect(server_address)
+        try:
+            server_address = (self.server, int(self.port))
+            self.sock.connect(server_address)
+        except:
+            print "Error...\nUnable to connect to " + self.server
         self.sock.settimeout(60)
         self.sock.send("cv:" + cv)
         compatible = self.sock.recv(1024)
@@ -248,7 +251,7 @@ class connect(object):
     def screen(self):
         global path
         #os.system("xterm -e python " + "./ChatRoom1.1Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
-        screenrun(self.username, self.port, self.server)
+        screenrun(self.username, self.port, self.server, self.quit)
         self.qt = True
         self.quit.put("1")
 def quitcheck(quit):

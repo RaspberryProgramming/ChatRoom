@@ -160,7 +160,8 @@ class Server(object):
                     online = self.online.get()
                     self.online.put(online)
                     if cmessage != lm:
-                        client.send(cmessage)
+                        csend = cmessage.split(":")
+                        client.send(csend[1] + ":" + csend[2])
                         lm = cmessage
                     else:
                         pass
@@ -250,11 +251,16 @@ class Server(object):
                             elif "ping:" == rmesg:
                                 pass
                             else:
-                                db = q.get()
-                                db[leng].append(name + ":" + rmesg[5:])
-                                q.put(db)
-                                self.mesg.get()
-                                self.mesg.put(name + ":" + rmesg[5:])
+                                curtime = str(int(time.time()))
+                                curmes = self.mesg.get()
+                                if curmes.split(":")[0] == curtime:
+                                    self.mesg.put(curmes)
+                                    print "1"
+                                else:
+                                    db = q.get()
+                                    db[leng].append(name + ":" + rmesg[5:])
+                                    q.put(db)
+                                    self.mesg.put(curtime + ":" + name + ":" + rmesg[5:])
                 except:
                     online = self.online.get()
                     if name in online:

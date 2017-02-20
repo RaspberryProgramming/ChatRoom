@@ -12,14 +12,21 @@ Chat Room 1.0 Codename "Birth" Features:
 - Ubuntu/Linux based OSes only because it requires xterm
 - Works and tested on Ubuntu
 - Plaintext communication
-- Uses socket
+- Uses
+socket
 - Uses threading for multiple clients
 - Multiple clients supported
+
+Chat Room 1.0 has been tested on:
+- Ubuntu Linux 16.10
 
 Chat Room 1.1 Codename "Shape Shifter" Features:
 - Added ip logging support
 - Improved support for platforms other than Ubuntu/Linux based OSes
-- Improved Performance and dos protection.*
+- Improved Performance and dos protection.*\
+
+Chat Room 1.1 has been tested on:
+- Ubuntu Linux 16.10
 
 Chat Room 2.0 Future Features:
 - Client Unique Encrypted communication

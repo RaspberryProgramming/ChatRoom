@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -.- coding: utf-8 -.-y
 import threading
+import subprocess
 import Queue
 import socket
 import time
 import sys
 import os
+import datetime
 from cmd import Cmd
 #Created by Camerin Figueroa
 cv = "1.1"
@@ -131,16 +133,16 @@ class Server(object):
     def listen(self):
         self.sock.listen(5)
         while True:
-            client, address = self.sock.accept()
-            client.settimeout(60)
-            #threading.Thread(target = self.sendcid,args = (client,address)).start()
-            #global clientdb
-            threading.Thread(target = self.listenToClient,args = (client,address)).start()
+            try:
+                client, address = self.sock.accept()
+                client.settimeout(60)
+                threading.Thread(target = self.listenToClient,args = (client,address)).start()
+            except:
+                pass
     def listenToClient(self, client, address):
         global cv
         cmd = self.motd.get()
         self.motd.put(cmd)
-        #global clientdb
         rcv = client.recv(128)
         if str(cv) != rcv[3:] and "cv:" in rcv:
             client.send("comp:0:" + str(cv))
@@ -187,7 +189,9 @@ class Server(object):
                         pass
                     time.sleep(.001)
             except:
-                print "Screen Error"
+                error = self.errors.get()
+                error.append("A screen raised an error")
+                self.errors.put(error)
                 pass
         else:
             client.send("comp:1")
@@ -255,7 +259,6 @@ class Server(object):
                                 curmes = self.mesg.get()
                                 if curmes.split(":")[0] == curtime:
                                     self.mesg.put(curmes)
-                                    print "1"
                                 else:
                                     db = q.get()
                                     db[leng].append(name + ":" + rmesg[5:])
@@ -271,6 +274,13 @@ class Server(object):
             else:
                 pass
 def writeoutput(q, errors):
+    if os.path.isdir("./logs") == False:
+        subprocess.Popen(['mkdir', './logs'], stdout=subprocess.PIPE,).communicate()[0]
+    else:
+        pass
+    tim = str(datetime.datetime.now())
+    tim = tim.replace(" ", "")
+    log = "./logs/log" + tim + ".txt"
     while True:
         try:
             time.sleep(10)
@@ -286,7 +296,7 @@ def writeoutput(q, errors):
                 for lin in line:
                     fw = fw + str(lin) + "\n"
             fw = fw + "═════════════════════════════════════════════════════════\nErrors:\n" + errs
-            f = open("crs.log", 'w')
+            f = open(log, 'w')
             f.write(fw)
             f.close()
         except:

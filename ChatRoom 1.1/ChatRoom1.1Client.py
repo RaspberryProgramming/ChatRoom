@@ -33,8 +33,41 @@ Chat Room Client════════╝
 quit = Queue.Queue()
 path = os.path.realpath(__file__)
 parser = argparse.ArgumentParser()
-parser.add_argument("-s", "--screen", help="This is used by the script to make a screen. Not necessarily needed for regular users.")
+parser.add_argument("-s", "--server", help="This is used to add the server and port via an argument instead of using the UI within the script.\nEX: -s server.ip:12345\n    OR -s server.ip")
+parser.add_argument("-u", "--username", help="This is used to add the user via an argument instead of using the UI within the script.\nEX: -s USERNAME")
 args = parser.parse_args()
+
+if args.server:
+    if ":" in args.server:
+        server = args.server.split(":")[0]
+        port = args.server.split(":")[1]
+    else:
+        server = args.server
+        port = "22550"
+        if port == "":
+            port = "22550"
+        else:
+            pass
+        if server == "":
+            server = "127.0.0.1"
+        else:
+            pass
+    if args.username:
+        username = args.username
+    else:
+        username = raw_input("Name:")
+else:
+    username = raw_input("Name:")
+    server = raw_input("Server IP[127.0.0.1]:")
+    port = raw_input("Server Port[22550]:")
+    if port == "":
+        port = "22550"
+    else:
+        pass
+    if server == "":
+        server = "127.0.0.1"
+    else:
+        pass
 
 def outputscreen(messages, online):
     rows, columns = os.popen('stty size', 'r').read().split()
@@ -87,13 +120,7 @@ def outputscreen(messages, online):
         printout = printout + line[0] + " "*space + line[1] + "\n"
     #lab = 1
     return printout
-#if args.screen:
 def screenrun(username, port, server, quit):
-    #sp = args.screen
-    #sp = sp.split(":")
-    #user = sp[2]
-    #port = int(sp[1])
-    #server = sp[0]
     global cv
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (server, int(port))
@@ -102,7 +129,6 @@ def screenrun(username, port, server, quit):
     #print "\33[96m Type /stop to quit\33[91m"
     qu = False
     messages = []
-
     online = sock.recv(1024)
     online = ast.literal_eval(online)
     tmp = online
@@ -132,8 +158,9 @@ def screenrun(username, port, server, quit):
             else:
                 pass
             if username not in online:
-                quit = True
+                qu = True
                 sock.send("quitting:")
+                quit.put("1")
             else:
                 sock.send("good:")
                 tmp = online
@@ -155,18 +182,7 @@ def screenrun(username, port, server, quit):
 #else:
 #    pass
 cv = "1.1"
-username = raw_input("Name:")
-server = raw_input("Server IP[127.0.0.1]:")
-port = raw_input("Server Port[22550]:")
-if port == "":
-    port = "22550"
-else:
-    pass
-if server == "":
-    server = "127.0.0.1"
-else:
-    pass
-print port
+
 class connect(object):
     def __init__(self, server, port, username, quit):
         self.quit = quit
@@ -183,6 +199,7 @@ class connect(object):
             self.sock.connect(server_address)
         except:
             print "Error...\nUnable to connect to " + self.server
+            os._exit(0)
         self.sock.settimeout(60)
         self.sock.send("cv:" + cv)
         compatible = self.sock.recv(1024)
@@ -231,7 +248,6 @@ class connect(object):
             else:
                 self.sock.send("mesg:" + inp)
         else:
-            #os._exit(0)
             pass
 
         '''except:

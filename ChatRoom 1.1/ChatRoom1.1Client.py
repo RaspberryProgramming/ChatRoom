@@ -76,12 +76,10 @@ def outputscreen(messages, online):
     columns = int(columns)
     if len(messages) > rows:
         messages = messages[len(messages) - rows:]
-        #print messages
     else:
         pass
     if len(online) > rows:
         online = online[len(online) - rows:]
-        #print online
     else:
         pass
     output = []
@@ -91,23 +89,14 @@ def outputscreen(messages, online):
     for message in messages:
         output[tick][0] = message
         tick = tick + 1
-        #print tick
     if len(output) <= len(online):
-        #print "less or equal output then online"
         for l in range(len(online) - len(output)):
             output.append(["", ""])
-        #print output
-        #for num in range(len(online)):
         tick = 0
-        #print output
         for user in online:
             output[tick][1] = user
             tick = tick + 1
-        #print output
     else:
-        #print "more output then online"
-        #print rows
-        #for num in range(len(output)):
         tick = 0
         for user in online:
             output[tick][1] = user
@@ -118,7 +107,6 @@ def outputscreen(messages, online):
         outleng = len(line[0]) + len(line[1])
         space = space - outleng
         printout = printout + line[0] + " "*space + line[1] + "\n"
-    #lab = 1
     return printout
 def screenrun(username, port, server, quit):
     global cv
@@ -126,7 +114,6 @@ def screenrun(username, port, server, quit):
     server_address = (server, int(port))
     sock.connect(server_address)
     sock.send("screen:")
-    #print "\33[96m Type /stop to quit\33[91m"
     qu = False
     messages = []
     online = sock.recv(1024)
@@ -137,11 +124,9 @@ def screenrun(username, port, server, quit):
     lab.pack()
     while qu == False:
         servercom = sock.recv(1024)
-        #print servercom
         if servercom == "quitting:":
             quit.put("1")
             qu = True
-            #os._exit(0)
         elif "online:" in servercom:
             online = ast.literal_eval(servercom[7:])
             if tmp != online:
@@ -165,22 +150,16 @@ def screenrun(username, port, server, quit):
                 sock.send("good:")
                 tmp = online
                 lab.config(text=outputscreen(messages, online))
-                #root.after(1000, screenrun)
 
         else:
             messages.append(servercom)
             lab.configure(text=outputscreen(messages, online))
-            #root.after(1000, )
             time.sleep(.01)
         if servercom == "ping":
             sock.send("ping:pong")
         else:
             pass
-        #lab.pack()
-        #root.update_idletasks()
         root.update()
-#else:
-#    pass
 cv = "1.1"
 
 class connect(object):
@@ -191,7 +170,6 @@ class connect(object):
         self.username = username
         self.con()
     def con(self):
-        #try:
         global cv
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -224,7 +202,6 @@ class connect(object):
             os._exit(0)
         threading.Thread(target = self.ping, args=()).start()
         threading.Thread(target = self.screen, args=()).start()
-        #self.screen.start()
         qu = False
         while qu == False:
             inp = raw_input(">>")
@@ -249,14 +226,6 @@ class connect(object):
                 self.sock.send("mesg:" + inp)
         else:
             pass
-
-        '''except:
-            print """\33[91m
-            ***************************************************
-                  Error while initiating connecting with server
-            ***************************************************
-            """
-            sys.exit()'''
     def ping(self):
         while True:
             if quit.empty() == False:
@@ -266,7 +235,6 @@ class connect(object):
                 time.sleep(1)
     def screen(self):
         global path
-        #os.system("xterm -e python " + "./ChatRoom1.1Client.py" + " -s " + self.server + ":" + self.port + ":" + self.username)
         screenrun(self.username, self.port, self.server, self.quit)
         self.qt = True
         self.quit.put("1")

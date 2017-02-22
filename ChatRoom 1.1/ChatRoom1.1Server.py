@@ -277,7 +277,7 @@ def writeoutput(q, errors):
         subprocess.Popen(['mkdir', './logs'], stdout=subprocess.PIPE,).communicate()[0]
     else:
         pass
-    tim = str(datetime.datetime.now(
+    tim = str(datetime.datetime.now())
     tim = tim.replace(" ", "")
     log = "./logs/log" + tim + ".txt"
     while True:

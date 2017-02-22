@@ -23,7 +23,8 @@ Chat Room 1.0 has been tested on:
 Chat Room 1.1 Codename "Shape Shifter" Features:
 - Added ip logging support
 - Improved support for platforms other than Ubuntu/Linux based OSes
-- Improved Performance and dos protection.*\
+- Improved Performance and dos protection.
+- Redesigned and Improved Display Algorithm
 
 Chat Room 1.1 has been tested on:
 - Ubuntu Linux 16.10

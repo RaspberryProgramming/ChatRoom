@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -.- coding: utf-8 -.-y
 import socket
+import math
 import os
 import time
 import threading
@@ -70,44 +71,64 @@ else:
         pass
 
 def outputscreen(messages, online):
-    rows, columns = os.popen('stty size', 'r').read().split()
-    rows = int(rows)
-    rows = rows - 1
-    columns = int(columns)
-    if len(messages) > rows:
-        messages = messages[len(messages) - rows:]
-    else:
-        pass
-    if len(online) > rows:
-        online = online[len(online) - rows:]
-    else:
-        pass
-    output = []
-    for line in range(rows):
-        output.append(["", ""])
-    tick = 0
+    rows = 24
+    columns = 38
+    display = []
+    for row in range(rows):
+        display.append([])
+        for column in range(columns):
+            display[row].append("")
+    messnum = 0
     for message in messages:
-        output[tick][0] = message
-        tick = tick + 1
-    if len(output) <= len(online):
-        for l in range(len(online) - len(output)):
-            output.append(["", ""])
-        tick = 0
-        for user in online:
-            output[tick][1] = user
-            tick = tick + 1
-    else:
-        tick = 0
-        for user in online:
-            output[tick][1] = user
-            tick = tick + 1
-    printout = ""
-    for line in output:
-        space = int(columns)
-        outleng = len(line[0]) + len(line[1])
-        space = space - outleng
-        printout = printout + line[0] + " "*space + line[1] + "\n"
-    return printout
+        mlines = int(math.ceil(len(message)/columns))
+        if mlines  == 0:
+            mlines = 1
+        else:
+            pass
+        for lin in range(mlines):
+            charnum = 0
+            for char in message:
+                if charnum > columns - 1:
+                    messnum = messnum + 1
+                    charnum = 0
+                else:
+                    pass
+                display[messnum][charnum] = char
+                charnum = charnum + 1
+        messnum = messnum + 1
+    rownum = 0
+    for user in online:
+        if len(user) > 8:
+            user = " " + user[:8]
+        else:
+            user = " " + user
+        for char in user:
+            display[rownum].append(char)
+        rownum = rownum + 1
+    for rownum in range(len(display)):
+        if len(display[rownum]) < columns + 9:
+            add = columns + 9 - len(display[rownum])
+            for num in range(add):
+                display[rownum].append("")
+        elif len(display[rownum]) > columns + 9:
+            remove = columns + 9 - lendisplay[rownum]
+            for num in range(remove):
+                print "1"
+        else:
+            pass
+
+    send = ""
+    for line in display:
+        for l in line:
+            if l != "":
+                send = send + l
+            else:
+                send = send + " "
+        send = send + "\n"
+    f = open("./outf", "w")
+    f.write(send)
+    f.close()
+    return send
 def screenrun(username, port, server, quit):
     global cv
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

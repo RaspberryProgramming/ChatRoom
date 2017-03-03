@@ -146,7 +146,7 @@ def screenrun(username, port, server, quit):
     while qu == False:
         servercom = sock.recv(1024)
         if servercom == "quitting:":
-            quit.put("1")
+            quit.put("Server Shutting Down...")
             qu = True
         elif "online:" in servercom:
             online = ast.literal_eval(servercom[7:])
@@ -165,8 +165,10 @@ def screenrun(username, port, server, quit):
                 pass
             if username not in online:
                 qu = True
-                sock.send("quitting:")
-                quit.put("1")
+                try:
+                    sock.send("quitting:")
+                except:
+                    quit.put("Server already shutdown...")
             else:
                 sock.send("good:")
                 tmp = online
@@ -228,23 +230,27 @@ class connect(object):
             inp = raw_input(">>")
             if inp == "/quit":
                 qu = True
-                self.quit.put("1")
+                self.quit.put(1)
                 self.sock.send("quitting:")
                 self.sock.close()
             elif "" == inp:
-                """\33[91m
+                print """\33[91m
                 ***************************************************
                       Error no message entered
                 ***************************************************
                 """
             elif "/help" == inp:
-                """\33[91m
+                print """\33[91m
                 ***************************************************
                       Error no help menu implemented yet
                 ***************************************************
                 """
             else:
-                self.sock.send("mesg:" + inp)
+                try:
+                    self.sock.send("mesg:" + inp)
+                except:
+                    quit.put("Server disconnected out of nowhere")
+                    self.sock.close()
         else:
             pass
     def ping(self):
@@ -252,7 +258,10 @@ class connect(object):
             if quit.empty() == False:
                 break
             else:
-                self.sock.send("ping:")
+                try:
+                    self.sock.send("ping:")
+                except:
+                    quit.put("Ping Fail")
                 time.sleep(1)
     def screen(self):
         global path
@@ -265,6 +274,12 @@ def quitcheck(quit):
         if quit.empty() == True:
             pass
         else:
+            quitreason = quit.get()
+            quit.put(quitreason)
+            if quitreason == 1 or quitreason == "1":
+                print "\33[97mThanks for using ChatRoom"
+            else:
+                print "\33[97mQuitting because " + quitreason
             time.sleep(2)
             os._exit(0)
 threading.Thread(target = quitcheck, args=(quit,)).start()

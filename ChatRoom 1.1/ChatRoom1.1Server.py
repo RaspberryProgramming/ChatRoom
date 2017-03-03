@@ -73,6 +73,19 @@ def console(q, errors, motd):
         prompt.prompt = '> '
         prompt.cmdloop('Starting prompt...')
 class consoleprompt(Cmd):
+    def do_say(self, args):
+        if args == "" or args == " ":
+            print "say messagetosay\nor\nsay Message to say"
+        else:
+            curtime = str(int(time.time()))
+            curmes = mesg.get()
+            if curmes.split(":")[0] == curtime:
+                mesg.put(curmes)
+            else:
+                db = q.get()
+                db[1].append("OP" + ":" + args)
+                q.put(db)
+                mesg.put(curtime + ":" + "OP" + ":" + args)
     def do_printdb(self, args):
         global q
         self.quit = quit
@@ -111,7 +124,7 @@ class consoleprompt(Cmd):
             print "add -c newcmd"
     def do_quit(self, args):
         global quit
-        print "Quitting."
+        print "Quitting.\33[97m"
         quit.get()
         quit.put("quitting:")
         time.sleep(2)
@@ -241,6 +254,7 @@ class Server(object):
                     online = self.online.get()
                     online.append(name)
                     self.online.put(online)
+                    warntim = 0
                     while True:
                             rmesg = client.recv(1024)
                             if "" == rmesg:
@@ -258,6 +272,11 @@ class Server(object):
                                 curmes = self.mesg.get()
                                 if curmes.split(":")[0] == curtime:
                                     self.mesg.put(curmes)
+                                    warntim = warntim + 1
+                                    if warntim == 100:
+                                        client.close()
+                                    else:
+                                        pass
                                 else:
                                     db = q.get()
                                     db[leng].append(name + ":" + rmesg[5:])

@@ -1,5 +1,6 @@
-Chat Room 1.1 Checklist
+Chat Room 2.0 Checklist
 - Get rid of spider webs
-- Test and fix glitches and put bugs out of window
-- Fix bug when client freezes after sending large message
-- Add the ability for the server console to send messages
+- Test and fix glitches and bugs
+- Fix formatting bug
+- Finish encryption and implement into script
+- Add database support

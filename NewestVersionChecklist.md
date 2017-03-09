@@ -4,3 +4,4 @@ Chat Room 2.0 Checklist
 - Fix formatting bug
 - Finish encryption and implement into script
 - Add database support
+- make encrypt automatically log errors

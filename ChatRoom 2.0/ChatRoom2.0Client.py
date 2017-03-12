@@ -72,13 +72,13 @@ if args.server:
             username = args.username
         else:
             username = raw_input("Name:")
-        if args.password:
-            password = args.password
-        else:
-            password = getpass.getpass()
+    if args.password:
+        password = args.password
+    else:
+        password = getpass.getpass()
     if len(password) > 28:
-        print "Error... Password too long.\nMax of 28 characters"
-        sys.exit()
+        print "Error... Password too long.\nMax of 28 characters\33[97m"
+        os._exit(0)
     else:
         pass
 
@@ -150,7 +150,7 @@ def outputscreen(messages, online):
         elif len(display[rownum]) > columns + 9:
             remove = columns + 9 - lendisplay[rownum]
             for num in range(remove):
-                print "1"
+                pass
         else:
             pass
 
@@ -169,8 +169,8 @@ def outputscreen(messages, online):
 def yash(inp):
     try:
         partial = inp + 1
-        print "Error this is not a string"
-        sys.exit()
+        print "Error this is not a string\33[97m"
+        os._exit(0)
     except:
         pass
     tick = 0
@@ -279,11 +279,10 @@ class connect(object):
             server_address = (self.server, int(self.port))
             self.sock.connect(server_address)
         except:
-            print "Error...\nUnable to connect to " + self.server
+            print "Error...\nUnable to connect to " + self.server + ""
             os._exit(0)
         self.sock.settimeout(60)
         self.sock.send("cv:" + cv)
-        print "cv:" + cv
         compatible = self.sock.recv(1024)
         if compatible == "comp:1":
             time1 = int(round(time.time()*1000))
@@ -294,9 +293,9 @@ class connect(object):
             keytime = str(time.time())
             hm = now.strftime("%H%M")
             if time2 - time1 > 250:
-                print "Error Ping is longer than 250 ms."
+                print "Error Ping is longer than 250 ms.\33[97m"
                 self.sock.send("ptl:250")
-                sys.exit()
+                os._exit(0)
             else:
                 pass
             if len(keytime) < 32:
@@ -306,20 +305,16 @@ class connect(object):
                     key = key + "#"
             else:
                 pass
-            print key
             encrypt = AESCipher(key)
-            print "1"
             time.sleep(.1)
-            print encrypt.encrypt(username)
             self.sock.send(encrypt.encrypt(username))
-            print "2"
             reply = encrypt.decrypt(self.sock.recv(1024))
             if reply == "succ:sendek":
                 pass
             elif reply == "err:nousername":
-                print "Error no such username"
-                server.close()
-                sys.exit()
+                print "Error no such username\33[97m"
+                self.sock.close()
+                os._exit(0)
             else:
                 pass
             ekey = yash(password)
@@ -327,29 +322,26 @@ class connect(object):
             syncmessage = ""
             for line in range(10):
                 syncmessage = syncmessage + str(random.randrange(0, 9))
-            print syncmessage + ":syncmessage"
             self.sock.send(encrypt.encrypt(syncmessage))
             koc =  self.sock.recv(1024)
-            print koc
             if koc == "kill:wpass":
-                print "Error password is wrong"
+                print "Error password is wrong\33[97m"
                 self.sock.close()
-                sys.exit()
+                os._exit(0)
             elif encrypt.decrypt(koc) == "pass:excepted":
-                print "SUCCESS... Password Excepted"
+                pass
             else:
-                print "Password Error"
+                print "Password Error\33[97m"
                 self.sock.close()
-                sys.exit()
+                os._exit(0)
         else:
             print """\33[91m
             ***************************************************
                   Error Server is on version """ + compatible[7:] + """
             ***************************************************
-            """
+            \33[97m"""
             self.sock.close()
             os._exit(0)
-            sys.exit()
 
         self.sock.send(encrypt.encrypt("user:" + self.username))
         nc = self.sock.recv(1024)
@@ -359,9 +351,9 @@ class connect(object):
                   Error while sending username:
                   """ + nc[6:] + """
             ***************************************************
-            """
+            \33[97m"""
             os._exit(0)
-        threading.Thread(target = self.ping, args=()).start()
+        threading.Thread(target = self.ping, args=(encrypt, )).start()
         threading.Thread(target = self.screen, args=()).start()
         qu = False
         while qu == False:
@@ -376,31 +368,31 @@ class connect(object):
                 ***************************************************
                       Error no message entered
                 ***************************************************
-                """
+                \33[92m"""
             elif "/help" == inp:
                 print """\33[91m
                 ***************************************************
                       Error no help menu implemented yet
                 ***************************************************
-                """
+                \33[92m"""
             else:
                 try:
-                    self.sock.send("mesg:" + inp)
+                    self.sock.send(encrypt.encrypt("m3ssg::" + inp))
                 except:
                     quit.put("Server disconnected out of nowhere")
                     self.sock.close()
         else:
             pass
-    def ping(self):
+    def ping(self, encrypt):
         while True:
             if quit.empty() == False:
                 break
             else:
                 try:
-                    self.sock.send("ping:")
+                    self.sock.send(encrypt.encrypt("ping:"))
                 except:
                     quit.put("Ping Fail")
-                time.sleep(1)
+                time.sleep(2)
     def screen(self):
         global path
         screenrun(self.username, self.password, self.port, self.server, self.quit)
@@ -424,9 +416,9 @@ def screenrun(username, password, port, server, quit):
 
         hm = now.strftime("%H%M")
         if time2 - time1 > 250:
-            print "Error Ping is longer than 250 ms."
+            print "Error Ping is longer than 250 ms.\33[97m"
             sock.send("ptl:250")
-            sys.exit()
+            os._exit(0)
         else:
             pass
         if len(keytime) < 32:
@@ -442,9 +434,9 @@ def screenrun(username, password, port, server, quit):
         if reply == "succ:sendek":
             pass
         elif reply == "err:nousername":
-            print "Error no such username"
-            server.close()
-            sys.exit()
+            print "Error no such username\33[97m"
+            sock.close()
+            os._exit(0)
         else:
             pass
         ekey = yash(password)
@@ -455,15 +447,15 @@ def screenrun(username, password, port, server, quit):
         sock.send(encrypt.encrypt(syncmessage))
         koc = sock.recv(1024)
         if koc == "kill:wpass":
-            print "Error password is wrong"
+            print "Error password is wrong\33[97m"
             client.close()
-            sys.exit()
+            os._exit(0)
         elif encrypt.decrypt(koc) == "pass:excepted":
-            print "SUCCESS... Password Excepted"
+            pass
         else:
-            print "Password Error"
+            print "Password Error\33[97m"
             client.close()
-            sys.exit()
+            os._exit(0)
         qu = False
         messages = []
         online = encrypt.decrypt(sock.recv(1024))
@@ -475,6 +467,7 @@ def screenrun(username, password, port, server, quit):
         while qu == False:
             servercom = encrypt.decrypt(sock.recv(1024))
             if servercom == "quitting:":
+                print "Recieved quitting:"
                 quit.put("Server Shutting Down...")
                 qu = True
             elif "online:" in servercom:
@@ -499,7 +492,7 @@ def screenrun(username, password, port, server, quit):
                     except:
                         quit.put("Server already shutdown while quitting...")
                 else:
-                    sock.send("good:")
+                    sock.send(encrypt.encrypt("good:"))
                     tmp = online
                     lab.config(text=outputscreen(messages, online))
 
@@ -508,7 +501,7 @@ def screenrun(username, password, port, server, quit):
                 lab.configure(text=outputscreen(messages, online))
                 time.sleep(.01)
             if servercom == "ping":
-                sock.send("ping:pong")
+                sock.send(encrypt.encrypt("ping:pong"))
             else:
                 pass
             root.update()

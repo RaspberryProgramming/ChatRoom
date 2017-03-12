@@ -54,7 +54,6 @@ if os.path.isfile('./crsconfig.txt') == True:
             pass
         if "database =" in line:
             dbdir = line[11:]
-            print dbdir
         else:
             pass
         if "port = " in line:
@@ -136,7 +135,7 @@ class consoleprompt(Cmd):
         global quit
         print "Quitting.\33[97m"
         quit.get()
-        quit.put("quit(ting:")
+        quit.put("quitting:")
         time.sleep(2)
         os._exit(0)
     def do_printdatabase(self, args):
@@ -172,8 +171,6 @@ class Server(object):
         conn = sqlite3.connect(dbdir)
         c = conn.cursor()
         rcv = client.recv(128)
-        print rcv[3:]
-        print str(cv)
         if str(cv) != str(rcv[3:]) and "cv:" in rcv and rcv != "screen:":
             client.send("comp:0:" + str(cv))
             error = self.errors.get()
@@ -204,11 +201,8 @@ class Server(object):
                     key = key + "#"
             else:
                 pass
-            print key
             encrypt = AESCipher(key)
-            print "1"
             usern = encrypt.decrypt(client.recv(1024))
-            print "username:" + usern
             uget = "SELECT username FROM userbase WHERE username = '" + usern + "';"
             c.execute(uget)
             users = c.fetchall()
@@ -217,7 +211,6 @@ class Server(object):
                 if str(user[0]) == usern:
                     c.execute("SELECT username,yash,id FROM userbase WHERE username = '" + usern + "';")
                     userbase = c.fetchone()
-                    print str(userbase[1])
                 else:
                     pass
             #userbase =
@@ -232,18 +225,15 @@ class Server(object):
                 print "No such username"
                 client.close()
                 kill = 1
+            kill1 = 0
             if kill == 0:
                 encrypt = AESCipher(yash(str(userbase[1])) + hm)
                 syncmessage = encrypt.decrypt(client.recv(1024))
-                kill1 = 0
-                print "99"
-                print str(syncmessage)
                 if len(syncmessage) == 10:
                     try:
                         int(syncmessage)
                     except:
                         client.send("kill:wpass")
-                        print "killcon"
                         #kill Connection
                         kill1 = 1
                 else:
@@ -372,7 +362,7 @@ class Server(object):
                                 online.put(on)
                             elif "ping:" == rmesg:
                                 pass
-                            else:
+                            elif "m3ssg::" in rmesg:
                                 curtime = str(int(time.time()))
                                 curmes = self.mesg.get()
                                 if curmes.split(":")[0] == curtime:
@@ -384,9 +374,12 @@ class Server(object):
                                         pass
                                 else:
                                     db = q.get()
-                                    db[leng].append(name + ":" + rmesg[5:])
+                                    db[leng].append(name + ":" + rmesg[7:])
                                     q.put(db)
-                                    self.mesg.put(curtime + ":" + name + ":" + rmesg[5:])
+                                    self.mesg.put(curtime + ":" + name + ":" + rmesg[7:])
+                            else:
+                                print "add this to log errors. unknown packet"
+                                print rmesg
                 except:
                     online = self.online.get()
                     if name in online:

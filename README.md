@@ -1,7 +1,7 @@
 #ChatRoom ReadME
 Chat room was made with some parts based on Comugypt 1.0. There will be plans for encryption but that will be in later updates.
 Chat Room Doser is made for experimentation and research only. Do not use the script on any Chat Room servers. Chat Room Doser is made only for the Chat Room server.
-ChatRoom 2.0 is under development and may require advanced knowledge in python in order to troubleshoot issues. ChatRoom 2.0 may not have all features yet.
+ChatRoom 2.0 is official but may have bugs. Version 2.1 will have any reported that are fixed bugs.
 If you find any issues please contact me on one of the social media accounts listed towards the bottom of this README
 
 Requirements:
@@ -29,12 +29,15 @@ Chat Room 1.1 Codename "Shape Shifter" Features:
 Chat Room 1.1 has been tested on:
 - Ubuntu Linux 16.10
 
-Chat Room 2.0 Future Features:
+Chat Room 2.0 Codename "Crypto Cat" Features:
 - Client Unique Encrypted communication
+- Database implementation
 - More complexity
 - More options
 - Security
 
+Chat Room 2.0 has been tested on:
+- Ubuntu Linux 16.10
 Possible Future Features:
 - SQL or MYSQL logging
 - Data Mining AI

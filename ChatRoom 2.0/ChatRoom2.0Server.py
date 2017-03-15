@@ -142,6 +142,24 @@ class consoleprompt(Cmd):
         conn = sqlite3.connect(dbdir)
         c = conn.cursor()
         print "Under Development"
+    def do_adduser(self, args):
+        if args == "":
+            print "adduser username"
+            print "password prompt will pop up once you run the command."
+        else:
+            global dbdir
+            conn = sqlite3.connect(dbdir)
+            c = conn.cursor()
+            c.execute("SELECT EXISTS(SELECT 1 FROM userbase WHERE username='" + args + "' LIMIT 1)")
+            if int(c.fetchall()[0][0]) == 1:
+                print "Username already used"
+            else:
+                c.execute("SELECT MAX(id) FROM userbase")
+                maxid = int(c.fetchall()[0][0])
+                c.execute("insert into userbase values('" + args + "', '" + getpass.getpass() + "', '" + str(maxid + 1) + "');")
+                conn.commit()
+
+
 class Server(object):
     def __init__(self, host, port, q, motd, errors, mesg, quit, online, conn, c):
         self.c = c
@@ -222,7 +240,6 @@ class Server(object):
                     kill = 1
             except:
                 client.send(encrypt.encrypt("err:nousername"))
-                print "No such username"
                 client.close()
                 kill = 1
             kill1 = 0

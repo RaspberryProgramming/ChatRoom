@@ -1,11 +1,6 @@
 from Crypto.Cipher import AES
 from Crypto import Random
-import time
-import datetime
 import base64
-
-def genkey():
-    return Random.get_random_bytes(16)
 
 
 class AESCipher:
@@ -23,3 +18,6 @@ class AESCipher:
         tag = enc[16:32]
         cipher = AES.new(self.key, AES.MODE_EAX, nonce )
         return cipher.decrypt_and_verify( enc[32:], tag)
+    
+    def genkey(self):
+        return Random.get_random_bytes(16)

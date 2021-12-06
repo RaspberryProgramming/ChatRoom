@@ -1,34 +1,29 @@
 #!/usr/bin/env python
 # -.- coding: utf-8 -.-y
-import base64
-import datetime
-import getpass
-import os
-import Queue
 import socket
-import sqlite3
-import subprocess
-import sys
+import math
+import os
 import time
-import threading
-from cmd import Cmd
+import base64
 from Crypto.Cipher import AES
 from Crypto import Random
+import threading
+import random
 import Queue
-import AESCipher
-#Created by Camerin Figueroa
-cv = "2.0"
-q = Queue.Queue()
-q.put([[]])
-errors = Queue.Queue()
-errors.put([])
-motd = Queue.Queue()
-quit = Queue.Queue()
-quit.put("")
-mesg = Queue.Queue()
-mesg.put("")
-online = Queue.Queue()
-online.put([])
+import sys
+import argparse
+import datetime
+from multiprocessing import Process
+import getpass
+try:
+    from Tkinter import *
+except:
+    try:
+        os.system("pip install tkinter")
+    except:
+        print("Please Install Tkinter\nYou can do this with by typing 'pip install tkinter' or finding the library online.")
+
+import ast
 
 print("""\33[91m
 ═════════════════════════════════════════════════════════
@@ -44,435 +39,140 @@ Chat Room Client════════╝
 ═════════════════════════════════════════════════════════
 \33[92m""")
 
-port = 99999
-configcont = "#Replace Everything behind = sign\n#Ex before: config = edit\n#Ex after: config = configinput\n\nmotd = Hello world This is a new Chat Room Server made by Camerin Figueroa\nport = 22550\ndatabase = ./crdb.db"
-if os.path.isfile('./crsconfig.txt') == True:
-    f = open('./crsconfig.txt', 'r')
-    configuration = f.read()
-    f.close()
-    configuration = configuration.split("\n")
-    for line in configuration:
-        if "motd =" in line:
-            motd.put(line[6:])
-        else:
-            pass
-        if "database =" in line:
-            dbdir = line[11:]
-        else:
-            pass
-        if "port = " in line:
-            port = int(line[7:])
+now = datetime.datetime.now()
+quit = Queue.Queue()
+cv = "2.0"
+BS = 16
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+unpad = lambda s : s[:-ord(s[len(s)-1:])]
+path = os.path.realpath(__file__)
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--server", help="This is used to add the server and port via an argument instead of using the UI within the script.\nEX: -s server.ip:12345\n    OR -s server.ip")
+parser.add_argument("-u", "--username", help="This is used to add the user via an argument instead of using the UI within the script.\nEX: -s USERNAME")
+parser.add_argument("-p", "--password", help="This is used to add the user via an argument instead of using the UI within the script.\nEX: -s PASSWORD")
+args = parser.parse_args()
 
+if args.server:
+    if ":" in args.server:
+        server = args.server.split(":")[0]
+        port = args.server.split(":")[1]
+    else:
+        server = args.server
+        port = "22550"
+        if port == "":
+            port = "22550"
         else:
             pass
-
-else:
-    f = open('./crsconfig.txt', 'w')
-    f.write(configcont)
-    f.close()
-    print("Please edit crsconfig.txt")
-    sys.exit()
-if port != 99999:
-    pass
-else:
-    f = open('./crsconfig.txt', 'w')
-    f.write(configcont)
-    f.close()
-    print("Please edit crsconfig.txt")
-    sys.exit()
-def console(q, errors, motd):
-    if __name__ == '__main__':
-        prompt = consoleprompt()
-        prompt.prompt = '> '
-        prompt.cmdloop('Starting prompt...')
-class consoleprompt(Cmd):
-    def do_say(self, args):
-        if args == "" or args == " ":
-            print("say messagetosay\nor\nsay Message to say")
+        if server == "":
+            server = "127.0.0.1"
         else:
-            curtime = str(int(time.time()))
-            curmes = mesg.get()
-            if curmes.split(":")[0] == curtime:
-                mesg.put(curmes)
-            else:
-                db = q.get()
-                db[1].append("OP" + ":" + args)
-                q.put(db)
-                mesg.put(curtime + ":" + "OP" + ":" + args)
-    def do_printdb(self, args):
-        global q
-        self.quit = quit
-        db = q.get()
-        q.put(db)
-        tick = 0
-        for line in db:
-            for lin in line:
-                if tick == 0:
-                    for li in lin:
-                        print(li)
-                    tick = 1
-                else:
-                    print(lin)
-    def do_online(self, args):
-        global online
-        on = online.get()
-        online.put(on)
-        print("Online:")
-        for username in on:
-            print(username)
-    def do_printerrors(self, args):
-        global errors
-        erlist = errors.get()
-        errors.put(erlist)
-        print("Errors:")
-        for error in erlist:
-            print(error)
-    def do_motd(self, args):
-        if "-c" in args:
-            global motd
-            oldmotd = motd.get()
-            motd.put(args[3:])
-            print("motd changed from " + oldmotd + " to " + args[3:])
+            pass
+    if args.username and args.password:
+        username = args.username
+    else:
+        if args.username:
+            username = args.username
         else:
-            print("add -c newcmd")
-    def do_quit(self, args):
-        global quit
-        print("Quitting.\33[97m")
-        quit.get()
-        quit.put("quitting:")
-        time.sleep(2)
+            username = raw_input("Name:")
+    if args.password:
+        password = args.password
+    else:
+        password = getpass.getpass()
+    if len(password) > 28:
+        print("Error... Password too long.\nMax of 28 characters\33[97m")
         os._exit(0)
-    def do_printdatabase(self, args):
-        conn = sqlite3.connect(dbdir)
-        c = conn.cursor()
-        print("Under Development")
-    def do_adduser(self, args):
-        if args == "":
-            print("adduser username")
-            print("password prompt will pop up once you run the command.")
-        else:
-            global dbdir
-            conn = sqlite3.connect(dbdir)
-            c = conn.cursor()
-            c.execute("SELECT EXISTS(SELECT 1 FROM userbase WHERE username='" + args + "' LIMIT 1)")
-            if int(c.fetchall()[0][0]) == 1:
-                print("Username already used")
-            else:
-                c.execute("SELECT MAX(id) FROM userbase")
-                maxid = int(c.fetchall()[0][0])
-                c.execute("insert into userbase values('" + args + "', '" + getpass.getpass() + "', '" + str(maxid + 1) + "');")
-                conn.commit()
-
-
-class Server(object):
-    def __init__(self, host, port, q, motd, errors, mesg, quit, online, conn, c):
-        self.c = c
-        self.conn = conn
-        self.motd = motd
-        self.quit = quit
-        self.errors = errors
-        self.host = host
-        self.port = port
-        self.q = q
-        self.mesg = mesg
-        self.online = online
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind((self.host, self.port))
-    def listen(self):
-        self.sock.listen(5)
-        while True:
-            try:
-                client, address = self.sock.accept()
-                client.settimeout(60)
-                threading.Thread(target = self.listenToClient,args = (client,address)).start()
-            except:
-                pass
-    def listenToClient(self, client, address):
-        global cv, now, dbdir
-        conn = sqlite3.connect(dbdir)
-        c = conn.cursor()
-        rcv = client.recv(128).decode()
-        if str(cv) != str(rcv[3:]) and "cv:" in rcv and rcv != "screen:":
-            client.send(("comp:0:" + str(cv)).encode())
-            error = self.errors.get()
-            error.append("Error client is wrong version")
-            self.errors.put(error)
-            kill1 = 1
-        else:
-            client.send(b"comp:1")
-            client.recv(1024).decode()
-            client.send(b"ping")
-            time2 = int(round(time.time()*1000))
-            client.recv(1024).decode()
-            time3 = int(round(time.time()*1000))
-            keytime = str(time.time())
-            hm = now.strftime("%H%M")
-            if time2 - time3 > 250:
-                error = self.errors.get()
-                error.append("Error ping is longer than 250 ms.")
-                self.errors.put(error)
-                client.send(b"ptl:250")
-                kill1 = 1
-            else:
-                pass
-            if len(keytime) < 32:
-                add = 32 - len(keytime)
-                key = str(keytime)
-                for num in range(add):
-                    key = key + "#"
-            else:
-                pass
-            encrypt = AESCipher(key)
-            usern = encrypt.decrypt(client.recv(1024).decode())
-            uget = "SELECT username FROM userbase WHERE username = '" + usern + "';"
-            c.execute(uget)
-            users = c.fetchall()
-            ucheck = 0
-            for user in users:
-                if str(user[0]) == usern:
-                    c.execute("SELECT username,yash,id FROM userbase WHERE username = '" + usern + "';")
-                    userbase = c.fetchone()
-                else:
-                    pass
-            #userbase =
-            kill = 0
-            try:
-                if userbase:
-                    client.send(encrypt.encrypt(b"succ:sendek"))
-                else:
-                    kill = 1
-            except:
-                client.send(encrypt.encrypt(b"err:nousername"))
-                client.close()
-                kill = 1
-            kill1 = 0
-            if kill == 0:
-                encrypt = AESCipher(yash(str(userbase[1])) + hm)
-                syncmessage = encrypt.decrypt(client.recv(1024).decode())
-                if len(syncmessage) == 10:
-                    try:
-                        int(syncmessage)
-                    except:
-                        client.send("kill:wpass".encode())
-                        #kill Connection
-                        kill1 = 1
-                else:
-                    client.send("kill:wpass")
-                    #kill Connection
-                    client.close()
-                    kill1 = 1
-                if kill1 == 0:
-                    client.send(encrypt.encrypt(b"pass:excepted"))
-                    c.execute("insert into logs values('" + str(int(userbase[2])) + "', '" + str(userbase[0]) + " has logged in..." + "', '" + str(now.strftime("%Y:%M:%D:%H:%M:%S")) + "');")
-                else:
-                    c.execute("insert into logs values('" + str(int(userbase[2])) + "', '" + str(userbase[0]) + " failed to login with on IP:" + str(address[0]) + "', '" + str(now.strftime("%Y:%M:%D:%H:%M:%S")) + "');")
-                conn.commit()
-            else:
-                rcv = "cv:n/a"
-        if kill1 == 1:
-            pass
-        elif str(cv) != rcv[3:] and "cv:" in rcv:
-            pass
-        elif rcv == "screen:":
-            online = self.online.get()
-            self.online.put(online)
-            client.send(encrypt.encrypt(str(online).encode()))
-            cmessage = self.mesg.get()
-            self.mesg.put(cmessage)
-            lm = cmessage
-            tick = 0
-            qi = False
-            try:
-                while qi == False:
-                    cmessage = self.mesg.get()
-                    self.mesg.put(cmessage)
-                    online = self.online.get()
-                    self.online.put(online)
-                    if cmessage != lm:
-                        csend = cmessage.split(":")
-                        client.send(encrypt.encrypt(csend[1] + ":" + csend[2]))
-                        lm = cmessage
-                    else:
-                        pass
-                    quit = self.quit.get()
-                    self.quit.put(quit)
-                    if tick == 1000:
-                        client.send(encrypt.encrypt("online:" + str(online)))
-                        onlinecheck = encrypt.decrypt(client.recv(1024).decode())
-                        if onlinecheck == "quitting:":
-                            quit = "quitting:"
-                            qi = True
-                        else:
-                            pass
-                        tick = 0
-                    else:
-                        pass
-                    tick = tick + 1
-                    if quit == "quitting:":
-                        client.send(encrypt.encrypt("quitting:"))
-                        client.close()
-                        qi = True
-                    else:
-                        pass
-                    time.sleep(.001)
-            except:
-                error = self.errors.get()
-                error.append("A screen raised an error")
-                self.errors.put(error)
-                pass
-        else:
-            client.send(encrypt.encrypt("comp:1"))
-            name = encrypt.decrypt(client.recv(1024).decode())
-            if "user:" not in name:
-                client.send(encrypt.encrypt("error:wrong type of packet received. 'user:' was not within the packet"))
-                erlist = errors.get()
-                erlist.append(str(client.getpeername() + ":wrong type of packet received. 'user:' was not within the packet"))
-                errors.put(erlist)
-            else:
-                name = name[5:]
-                used = False
-                online = self.online.get()
-                self.online.put(online)
-                for user in online:
-                    if user == name:
-                        used = True
-                    else:
-                        pass
-                if used == True:
-                    client.send(encrypt.encrypt("error:Username has already been used before."))
-                    client.close()
-                    erlist = errors.get()
-                    erlist.append(str(name + ":" + name + ":Username has already been used before."))
-                    errors.put(erlist)
-                    check = False
-                else:
-                    client.send(encrypt.encrypt("user:" + name))
-                    check = True
-            if check == True:
-                db = q.get()
-                q.put(db)
-                leng = 1
-                for nam in db[0]:
-                    if name in nam:
-                        nl = leng
-                    else:
-                        leng = leng
-                if 'nl' in locals():
-                    db[0][nl - 1].append(address)
-                else:
-                    nl = leng
-                    db.append([name,])
-                    db[0].append([name, address])
-                    q.get()
-                    q.put(db)
-                try:
-                    online = self.online.get()
-                    online.append(name)
-                    self.online.put(online)
-                    warntim = 0
-                    while True:
-                            rmesg = encrypt.decrypt(client.recv(1024).decode())
-                            if "" == rmesg:
-                                pass
-                            elif "/help" == rmesg:
-                                pass
-                            elif "quitting:" == rmesg:
-                                on = online.get()
-                                on.remove(name)
-                                online.put(on)
-                            elif "ping:" == rmesg:
-                                pass
-                            elif "m3ssg::" in rmesg:
-                                curtime = str(int(time.time()))
-                                curmes = self.mesg.get()
-                                if curmes.split(":")[0] == curtime:
-                                    self.mesg.put(curmes)
-                                    warntim = warntim + 1
-                                    if warntim == 100:
-                                        client.close()
-                                    else:
-                                        pass
-                                else:
-                                    db = q.get()
-                                    db[leng].append(name + ":" + rmesg[7:])
-                                    q.put(db)
-                                    self.mesg.put(curtime + ":" + name + ":" + rmesg[7:])
-                            else:
-                                print("add this to log errors. unknown packet")
-                                print(rmesg)
-                except:
-                    online = self.online.get()
-                    if name in online:
-                        online.remove(name)
-                    else:
-                        pass
-                    self.online.put(online)
-            else:
-                pass
-def writeoutput(q, errors):
-    if os.path.isdir("./logs") == False:
-        subprocess.Popen(['mkdir', './logs'], stdout=subprocess.PIPE,).communicate()[0]
     else:
         pass
-    tim = str(datetime.datetime.now())
-    tim = tim.replace(" ", "")
-    log = "./logs/log" + tim + ".txt"
-    while True:
-        try:
-            time.sleep(10)
-            tta = q.get()
-            q.put(tta)
-            error = errors.get()
-            errors.put(error)
-            fw = "Users:\n"
-            errs = ""
-            for err in error:
-                errs = errs + err + "\n"
-            for line in tta:
-                for lin in line:
-                    fw = fw + str(lin) + "\n"
-            fw = fw + "═════════════════════════════════════════════════════════\nErrors:\n" + errs
-            f = open(log, 'w')
-            f.write(fw)
-            f.close()
-        except:
-            error = errors.get()
-            error.append("Error while writing output\n")
-            errors.put(error)
-#Added in Chat Room 2.0
-if os.path.isfile(dbdir) == True:
-    dbexist = 1
-else:
-    dbexist = 0
 
-now = datetime.datetime.now()
-conn = sqlite3.connect(dbdir)
-c = conn.cursor()
-if dbexist == 1:
-    pass
+
+
 else:
-    print("Initializing database...")
-    time.sleep(1)
-    print("Please put a new username and password into the database...")
-    good = False
-    while good == False:
-        usern = input("username:")
-        passw = getpass.getpass()
-        tmp = input("Are you sure thats correct?(Y/N)")
-        if tmp == "y" or tmp == "Y" or tmp == "ye" or tmp == "YE" or tmp == "YES" or tmp == "Yes" or tmp == "YEs" or tmp == "yes" or tmp == "" or tmp == " ":
-            good = True
+    if args.username and args.password:
+        username = args.username
+    else:
+        if args.username:
+            username = args.username
+        else:
+            username = raw_input("Name:")
+        if args.password:
+            password = args.password
+        else:
+            password = getpass.getpass()
+    server = raw_input("Server IP[127.0.0.1]:")
+    port = raw_input("Server Port[22550]:")
+    if port == "":
+        port = "22550"
+    else:
+        pass
+    if server == "":
+        server = "127.0.0.1"
+    else:
+        pass
+
+def outputscreen(messages, online):
+    rows = 24
+    columns = 38
+    display = []
+    for row in range(rows):
+        display.append([])
+        for column in range(columns):
+            display[row].append("")
+    messnum = 0
+    for message in messages:
+        mlines = int(math.ceil(len(message)/columns))
+        if mlines  == 0:
+            mlines = 1
         else:
             pass
-    c.execute("CREATE TABLE userbase (username real, yash real, id real);")
-    c.execute("CREATE TABLE logs (id real, message real, timestamp real);")
-    c.execute("insert into userbase values('" + usern + "', '" + passw + "', '1');")
-    conn.commit()
+        for lin in range(mlines):
+            charnum = 0
+            for char in message:
+                if charnum > columns - 1:
+                    messnum = messnum + 1
+                    charnum = 0
+                else:
+                    pass
+                display[messnum][charnum] = char
+                charnum = charnum + 1
+        messnum = messnum + 1
+    rownum = 0
+    for user in online:
+        if len(user) > 8:
+            user = " " + user[:8]
+        else:
+            user = " " + user
+        for char in user:
+            display[rownum].append(char)
+        rownum = rownum + 1
+    for rownum in range(len(display)):
+        if len(display[rownum]) < columns + 9:
+            add = columns + 9 - len(display[rownum])
+            for num in range(add):
+                display[rownum].append("")
+        elif len(display[rownum]) > columns + 9:
+            remove = columns + 9 - lendisplay[rownum]
+            for num in range(remove):
+                pass
+        else:
+            pass
+
+    send = ""
+    for line in display:
+        for l in line:
+            if l != "":
+                send = send + l
+            else:
+                send = send + " "
+        send = send + "\n"
+    f = open("./outf", "w")
+    f.write(send)
+    f.close()
+    return send
 def yash(inp):
     try:
         partial = inp + 1
-        print("Error this is not a string")
-        sys.exit()
+        print("Error this is not a string\33[97m")
+        os._exit(0)
     except:
         pass
     tick = 0
@@ -551,17 +251,275 @@ def yash(inp):
     for hexdig in hexlist:
         outp = outp + hexdig.decode("hex")
     return outp
+class AESCipher:
+    def __init__( self, key ):
+        self.key = key
 
-BS = 16
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
-unpad = lambda s : s[:-ord(s[len(s)-1:])]
+    def encrypt( self, raw ):
+        raw = pad(raw)
+        iv = Random.new().read( AES.block_size )
+        cipher = AES.new( self.key, AES.MODE_CBC, iv )
+        return base64.b64encode( iv + cipher.encrypt( raw ) )
 
-def ping(sock):
-    while True:
+    def decrypt( self, enc ):
+        enc = base64.b64decode(enc)
+        iv = enc[:16]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv )
+        return unpad(cipher.decrypt( enc[16:] ))
+class connect(object):
+    def __init__(self, server, port, username, password, quit):
+        self.quit = quit
+        self.server = server
+        self.port = port
+        self.username = username
+        self.password = password
+        self.con()
+    def con(self):
+        global cv, now
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            server_address = (self.server, int(self.port))
+            self.sock.connect(server_address)
+        except:
+            print("Error...\nUnable to connect to " + self.server)
+            os._exit(0)
+        self.sock.settimeout(60)
+        self.sock.send("cv:" + cv)
+        compatible = self.sock.recv(1024)
+        if compatible == "comp:1":
+            time1 = int(round(time.time()*1000))
+            self.sock.send("ping")
+            time2 = int(round(time.time()*1000))
+            self.sock.recv(1024)
+            self.sock.send("ping")
+            keytime = str(time.time())
+            hm = now.strftime("%H%M")
+            if time2 - time1 > 250:
+                print("Error Ping is longer than 250 ms.\33[97m")
+                self.sock.send("ptl:250")
+                os._exit(0)
+            else:
+                pass
+            if len(keytime) < 32:
+                add = 32 - len(keytime)
+                key = str(keytime)
+                for num in range(add):
+                    key = key + "#"
+            else:
+                pass
+            encrypt = AESCipher(key)
+            time.sleep(.1)
+            self.sock.send(encrypt.encrypt(username))
+            reply = encrypt.decrypt(self.sock.recv(1024))
+            if reply == "succ:sendek":
+                pass
+            elif reply == "err:nousername":
+                print("Error no such username\33[97m")
+                self.sock.close()
+                os._exit(0)
+            else:
+                pass
+            ekey = yash(password)
+            encrypt = AESCipher(ekey + hm)
+            syncmessage = ""
+            for line in range(10):
+                syncmessage = syncmessage + str(random.randrange(0, 9))
+            self.sock.send(encrypt.encrypt(syncmessage))
+            koc =  self.sock.recv(1024)
+            if koc == "kill:wpass":
+                print("Error password is wrong\33[97m")
+                self.sock.close()
+                os._exit(0)
+            elif encrypt.decrypt(koc) == "pass:excepted":
+                pass
+            else:
+                print("Password Error\33[97m")
+                self.sock.close()
+                os._exit(0)
+        else:
+            print("""\33[91m
+            ***************************************************
+                  Error Server is on version """ + compatible[7:] + """
+            ***************************************************
+            \33[97m""")
+            self.sock.close()
+            os._exit(0)
+
+        self.sock.send(encrypt.encrypt("user:" + self.username))
+        nc = self.sock.recv(1024)
+        if "error:" in nc:
+            print("""\33[91m
+            ***************************************************
+                  Error while sending username:
+                  """ + nc[6:] + """
+            ***************************************************
+            \33[97m""")
+            os._exit(0)
+        threading.Thread(target = self.ping, args=(encrypt, )).start()
+        threading.Thread(target = self.screen, args=()).start()
+        qu = False
+        while qu == False:
+            inp = raw_input(">>")
+            if inp == "/quit":
+                qu = True
+                self.quit.put(1)
+                self.sock.send("quitting:")
+                self.sock.close()
+            elif "" == inp:
+                print("""\33[91m
+                ***************************************************
+                      Error no message entered
+                ***************************************************
+                \33[92m""")
+            elif "/help" == inp:
+                print("""\33[91m
+                ***************************************************
+                      Error no help menu implemented yet
+                ***************************************************
+                \33[92m""")
+            else:
+                try:
+                    self.sock.send(encrypt.encrypt("m3ssg::" + inp))
+                except:
+                    quit.put("Server disconnected out of nowhere")
+                    self.sock.close()
+        else:
+            pass
+    def ping(self, encrypt):
+        while True:
+            if quit.empty() == False:
+                break
+            else:
+                try:
+                    self.sock.send(encrypt.encrypt("ping:"))
+                except:
+                    quit.put("Ping Fail")
+                time.sleep(2)
+    def screen(self):
+        global path
+        screenrun(self.username, self.password, self.port, self.server, self.quit)
+        self.qt = True
+        self.quit.put("1")
+def screenrun(username, password, port, server, quit):
+    global cv, now
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = (server, int(port))
+    sock.connect(server_address)
+    sock.send("screen:")
+    if sock.recv(1024) != "comp:1":
+        sock.close()
+    else:
+        time1 = int(round(time.time()*1000))
         sock.send("ping")
-        time.sleep(1)
+        time2 = int(round(time.time()*1000))
+        sock.recv(1024)
+        sock.send("ping")
+        keytime = str(time.time())
 
-if __name__ == "__main__":
-    threading.Thread(target = writeoutput,args = (q,errors)).start()
-    threading.Thread(target = console,args = (q, errors, motd)).start()
-    Server('', port ,q, motd, errors, mesg, quit, online, conn, c).listen()
+        hm = now.strftime("%H%M")
+        if time2 - time1 > 250:
+            print("Error Ping is longer than 250 ms.\33[97m")
+            sock.send("ptl:250")
+            os._exit(0)
+        else:
+            pass
+        if len(keytime) < 32:
+            add = 32 - len(keytime)
+            key = str(keytime)
+            for num in range(add):
+                key = key + "#"
+        else:
+            pass
+        encrypt = AESCipher(key)
+        sock.send(encrypt.encrypt(username))
+        reply = encrypt.decrypt(sock.recv(1024))
+        if reply == "succ:sendek":
+            pass
+        elif reply == "err:nousername":
+            print("Error no such username\33[97m")
+            sock.close()
+            os._exit(0)
+        else:
+            pass
+        ekey = yash(password)
+        encrypt = AESCipher(ekey + hm)
+        syncmessage = ""
+        for line in range(10):
+            syncmessage = syncmessage + str(random.randrange(0, 9))
+        sock.send(encrypt.encrypt(syncmessage))
+        koc = sock.recv(1024)
+        if koc == "kill:wpass":
+            print("Error password is wrong\33[97m")
+            client.close()
+            os._exit(0)
+        elif encrypt.decrypt(koc) == "pass:excepted":
+            pass
+        else:
+            print("Password Error\33[97m")
+            client.close()
+            os._exit(0)
+        qu = False
+        messages = []
+        online = encrypt.decrypt(sock.recv(1024))
+        online = ast.literal_eval(online)
+        tmp = online
+        root = Tk()
+        lab = Label(root)
+        lab.pack()
+        while qu == False:
+            servercom = encrypt.decrypt(sock.recv(1024))
+            if servercom == "quitting:":
+                print "Recieved quitting:"
+                quit.put("Server Shutting Down...")
+                qu = True
+            elif "online:" in servercom:
+                online = ast.literal_eval(servercom[7:])
+                if tmp != online:
+                    for line in tmp:
+                        if line not in online:
+                            messages.append(line + " has left the server...")
+                        else:
+                            pass
+                    for line in online:
+                        if line not in tmp:
+                            messages.append(line + " has joined the server...")
+                        else:
+                            pass
+                else:
+                    pass
+                if username not in online:
+                    qu = True
+                    try:
+                        sock.send(encrypt.encrypt("quitting:"))
+                    except:
+                        quit.put("Server already shutdown while quitting...")
+                else:
+                    sock.send(encrypt.encrypt("good:"))
+                    tmp = online
+                    lab.config(text=outputscreen(messages, online))
+
+            else:
+                messages.append(servercom)
+                lab.configure(text=outputscreen(messages, online))
+                time.sleep(.01)
+            if servercom == "ping":
+                sock.send(encrypt.encrypt("ping:pong"))
+            else:
+                pass
+            root.update()
+def quitcheck(quit):
+    while True:
+        time.sleep(1)
+        if quit.empty() == True:
+            pass
+        else:
+            quitreason = quit.get()
+            quit.put(quitreason)
+            if quitreason == 1 or quitreason == "1":
+                print("\33[97mThanks for using ChatRoom")
+            else:
+                print("\33[97mQuitting because " + quitreason)
+            time.sleep(2)
+            os._exit(0)
+threading.Thread(target = quitcheck, args=(quit,)).start()
+threading.Thread(target=connect, args=(server, port, username, password, quit)).start()
